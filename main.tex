@@ -29,7 +29,65 @@ Email
 
 \section{Introduction}
 \label{sec:introduction}
-% TODO: Motivation, problem, and contributions.
+Global routing determines how wires connnect each pin of a net in physical design. 
+The parasitic resistance and capacitance (RC) in each net
+could vary drastically across different routing decisions.
+These RC further affect the wire delay and the load capacitance seen by the cell.
+One bad routing could also increase delay on critical paths and cause timing violations on 
+its downstream endpoints. 
+However, the routing resource is limited and we cannot always assign 
+the best RC for each net. 
+Therefore, it is essential for timing driven global routing to identify
+which nets are timing critical and how many resources should be allocated to them.
+
+Previous works have proposed various methods to solve this problem. 
+GAP-LA \cite{gap-la} first detemines the 2D topology of the routing tree and then 
+uses a look ahead function to eastimate the timing cost for the 3D layer assignment.
+They define net criticality based on the number of worst timing paths traversing the net and 
+minimum pin slack.
+Zhou et al. \cite{zhou2026aspdac} balance the timing cost and congestion cost in 
+the dynamic programming process of the 3D DAG routing. 
+They classify a net as critical if any of its pins has negative slack.
+Xiao el at. \cite{xiao2026ispd} 
+further apply the log-sum-exponential (LSE) function and derive timing gradient 
+to identify the timing critical nets and give each routing segment 
+a loss function driven weight. 
+However, all these methods focus on optimization under elmore delay and lumped capacitance model. 
+They do not explicitly consider cell delay and slew changes caused by different routing choices.  
+Moreover, their net criticality and timing cost are evaluated based on one single STA result, neglecting 
+the timing changes after some nets have been routed.
+
+In signoff STA, the cell delay is evaluated using effective-load model, such as 
+Dartu-Menezes-Pileggi (DMP) \cite{dmp} model. They first reduce the parasitic RC 
+using the Pi model \cite{PImodel} to a resistance, a near end capacitance, and a 
+far end capacitance. 
+Then they compute the effective load based
+on effective current and voltage waveform eqautions. 
+The effective load can be samller than the lumped capacitance because of the 
+far end capacitance
+can be shielded by the resistance, 
+meaning that larger net resistance might reduce the cell delay.
+Utilizing the shielding effect, we could relieve the resouce competence for smaller RC during routing 
+and reduce the congestion. 
+
+Besides the timing model, the net timing criticality determines the order how nets are routed and plays an important role in
+timing driven global routing.
+Previous slack based
+criticality only shows where the timing violation net is, without considering how much 
+negative slack could be reduced if more routing resources are allocated to the net. 
+Nevertheless, slacks of nets change after routing each single net and critical paths may become less important. 
+% 配图：shielding effect的真实例子。
+
+Based on above observations, we propose a timing gradient under DMP effective load model,
+and we dynamically update the net criticality during the routing.   
+The main contributions are as follows:
+\begin{itemize}
+    \item We propose a timing gradient under the DMP effective l
+    oad model.
+    \item We dynamically update the net criticality based on estimated changes in negative slack.
+    \item We demonstrate the effectiveness of our approach through experiments.
+\end{itemize}
+
 
 \section{Related Work}
 \label{sec:related-work}
